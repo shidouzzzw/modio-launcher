@@ -1,0 +1,128 @@
+name: Derleme
+
+# PyInstaller çapraz derleme yapamaz: her işletim sistemi kendi runner'ında
+# önce launcher-service'i dondurur, sonra paketi üretir.
+#
+# Windows runner'ı .msi / NSIS .exe dosyalarını, Linux runner'ı .deb, .rpm ve
+# .AppImage dosyalarını üretir.
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-22.04
+            artifact: linux
+          - os: windows-latest
+            artifact: windows
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      # Dondurma için yalnızca yorumlayıcı gerekir; bağımlılıklar
+      # requirements.txt üzerinden sanal ortama kurulur.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      # Tauri'nin Linux paketlemesi için sistem kütüphaneleri. patchelf,
+      # linuxdeploy'un ikili dosyaları düzenlemesi için gerekir.
+      - name: Linux sistem bağımlılıkları
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev \
+            patchelf
+
+      - run: npm ci
+
+      # Windows'ta `shell: bash` Git Bash'tir; betik iki platformda da çalışır.
+      - name: launcher-service dondur
+        shell: bash
+        run: ./launcher-service/build-sidecar.sh
+
+      - name: Paketi üret
+        run: npm run tauri build
+
+      # Tauri 2.11.4'ün AppImage adımı "Finished 1 bundle" deyip exit 0 ile
+      # HİÇ dosya üretmiyor (sessiz başarısızlık; patchelf kurulu olsa da
+      # tekrarladı). AppDir eksiksiz oluştuğu için son sıkıştırma adımını
+      # appimagetool ile tamamlıyoruz.
+      - name: AppImage eksikse appimagetool ile tamamla
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          set -euo pipefail
+          existing=$(ls src-tauri/target/release/bundle/appimage/*.AppImage 2>/dev/null || true)
+          if [ -n "$existing" ]; then
+            echo "Tauri AppImage'ı üretti: $existing"
+            exit 0
+          fi
+
+          appdir=$(ls -d src-tauri/target/release/bundle/appimage/*.AppDir | head -1)
+          name=$(node -p "require('./src-tauri/tauri.conf.json').productName")
+          version=$(node -p "require('./src-tauri/tauri.conf.json').version")
+          target="src-tauri/target/release/bundle/appimage/${name}_${version}_amd64.AppImage"
+
+          # Uzantı korunmalı: `.AppImage` olmayan bir ada sahip dosyayı bazı
+          # sistemler (AppImageLauncher binfmt) tanımaz ve execv başarısız olur.
+          tool=/tmp/appimagetool-x86_64.AppImage
+          curl -sSLo "$tool" \
+            https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage
+          chmod +x "$tool"
+          ARCH=x86_64 "$tool" "$appdir" "$target"
+          echo "AppImage appimagetool ile üretildi: $target"
+
+      # Tauri bazı paketleri üretmeden exit 0 dönebiliyor; sessiz kaybı
+      # "yeşil build" hâline getirmemek için beklenen çıktıları doğrula.
+      - name: Paketler gerçekten üretildi mi
+        shell: bash
+        run: |
+          set -euo pipefail
+          bundle=src-tauri/target/release/bundle
+          if [ "${{ runner.os }}" = "Windows" ]; then
+            expected="$bundle/msi/*.msi $bundle/nsis/*.exe"
+          else
+            expected="$bundle/deb/*.deb $bundle/rpm/*.rpm $bundle/appimage/*.AppImage"
+          fi
+
+          missing=0
+          for pattern in $expected; do
+            if compgen -G "$pattern" > /dev/null; then
+              echo "OK    $pattern"
+            else
+              echo "EKSİK $pattern"
+              missing=1
+            fi
+          done
+
+          if [ "$missing" -ne 0 ]; then
+            echo "Beklenen paket(ler) üretilmedi; build başarılı görünse de çıktı eksik." >&2
+            exit 1
+          fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: modio-launcher-${{ matrix.artifact }}
+          path: src-tauri/target/release/bundle/**
+          if-no-files-found: error

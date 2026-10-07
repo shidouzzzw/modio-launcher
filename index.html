@@ -1,0 +1,535 @@
+<!doctype html>
+<html lang="tr" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#0a0b0e" />
+    <link rel="icon" href="/src/assets/modio-icon.png" />
+    <title>Modio Launcher</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/src/style.css" />
+    <script>
+      document.documentElement.dataset.theme = "dark";
+    </script>
+  </head>
+  <body>
+    <div class="app">
+      <!-- ================= ARKA PLAN ================= -->
+      <div class="bg" aria-hidden="true">
+        <img class="bg-image" src="/src/assets/modio-hero-adventure.jpg" alt="" />
+        <span class="bg-light"></span>
+        <span class="bg-scrim"></span>
+        <span class="bg-vignette"></span>
+      </div>
+
+      <!-- ================= ÜST BAR ================= -->
+      <header class="topbar">
+        <div class="topbar-main" data-tauri-drag-region>
+          <div class="brand">
+            <span class="brand-logo" aria-hidden="true">
+              <img src="/src/assets/modio-icon.png" alt="" />
+            </span>
+            <span class="brand-name">MODIO</span>
+            <span class="brand-tag">BETA</span>
+          </div>
+
+          <div class="topbar-right">
+            <button class="icon-button" type="button" aria-label="Web sitesi" data-open-url="https://modio.vercel.app">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="12" r="8.5" />
+                <path d="M3.5 12h17M12 3.5c2.4 2.3 3.6 5.3 3.6 8.5s-1.2 6.2-3.6 8.5c-2.4-2.3-3.6-5.3-3.6-8.5S9.6 5.8 12 3.5Z" />
+              </svg>
+            </button>
+
+            <button class="account-card" id="account-card" type="button">
+              <img class="account-avatar" id="account-avatar" alt="" />
+              <span class="account-text">
+                <strong id="account-name">Hesap ekle</strong>
+                <small id="account-sub" hidden></small>
+              </span>
+              <svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9.5 12 15l6-5.5" /></svg>
+            </button>
+          </div>
+        </div>
+
+        <nav class="nav-tabs" id="sidebar-nav" aria-label="Ana gezinme">
+          <span class="nav-indicator" id="nav-indicator" aria-hidden="true"></span>
+
+          <button class="nav-item is-active" type="button" data-page="home">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M3.5 10.8 12 4l8.5 6.8V20a1 1 0 0 1-1 1h-4.8v-5.6H9.3V21H4.5a1 1 0 0 1-1-1v-9.2Z" />
+            </svg>
+            <span>Ana Sayfa</span>
+          </button>
+
+          <button class="nav-item" type="button" data-page="mods">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M9.5 4.5A1.5 1.5 0 0 1 11 3h2a1.5 1.5 0 0 1 1.5 1.5v1.2h1.7A1.8 1.8 0 0 1 18 7.5v1.7h1.2A1.5 1.5 0 0 1 20.7 11v2a1.5 1.5 0 0 1-1.5 1.5H18v1.7a1.8 1.8 0 0 1-1.8 1.8h-1.7V19a1.5 1.5 0 0 1-1.5 1.5h-2A1.5 1.5 0 0 1 9.5 19v-1.2H7.8A1.8 1.8 0 0 1 6 16v-1.7H4.8A1.5 1.5 0 0 1 3.3 12.8v-1.9A1.5 1.5 0 0 1 4.8 9.4H6V7.7A1.8 1.8 0 0 1 7.8 5.9h1.7V4.5Z" />
+            </svg>
+            <span>Eklentiler</span>
+          </button>
+
+          <button class="nav-item" type="button" data-page="settings">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="12" cy="12" r="3" />
+              <path d="M12 2.8v2.3M12 18.9v2.3M2.8 12h2.3M18.9 12h2.3M5.6 5.6l1.7 1.7M16.7 16.7l1.7 1.7M18.4 5.6l-1.7 1.7M7.3 16.7l-1.7 1.7" />
+            </svg>
+            <span>Ayarlar</span>
+          </button>
+        </nav>
+      </header>
+
+      <!-- ================= İÇERİK ================= -->
+      <main class="viewport" id="viewport">
+        <!-- ---------- ANA SAYFA ---------- -->
+        <section class="page page-home is-active" id="page-home" aria-label="Ana Sayfa">
+          <div class="home-center">
+            <p class="home-account" id="launch-account">Hesap ekle</p>
+
+            <button class="play-button" id="launch-btn" type="button">
+              <span class="play-button-icon" id="launch-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5-11-6.5Z" /></svg>
+              </span>
+              <span class="play-button-label" id="launch-label">OYNA</span>
+            </button>
+
+            <p class="home-version" id="launch-version">Sürüm yükleniyor…</p>
+          </div>
+
+          <div class="build-tag">v<span id="app-version">0.1.0</span></div>
+        </section>
+
+        <!-- ---------- EKLENTİLER ---------- -->
+        <section class="page page-mods" id="page-mods" aria-label="Eklentiler">
+          <header class="page-head">
+            <div>
+              <h1>Eklentiler</h1>
+              <p>Modrinth üzerinden mod, shader ve kaynak paketi kur</p>
+            </div>
+            <div class="page-head-actions">
+              <button class="chip is-active" id="mods-tab-discover" type="button">Keşfet</button>
+              <button class="chip" id="mods-tab-installed" type="button">
+                Kurulu (<span id="mods-count">0</span>)
+              </button>
+            </div>
+          </header>
+
+          <div class="mods-toolbar">
+            <label class="inline-search">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="10.5" cy="10.5" r="6" />
+                <path d="m15 15 4.5 4.5" />
+              </svg>
+              <input
+                id="mods-search"
+                type="search"
+                placeholder="Ara…"
+                autocomplete="off"
+                aria-label="Modrinth'te ara"
+              />
+            </label>
+
+            <div class="segmented" id="mod-categories" role="tablist" aria-label="Kategori">
+              <span class="segmented-thumb" id="mods-thumb" aria-hidden="true"></span>
+              <button class="segment is-active" type="button" data-category="mod" role="tab">Modlar</button>
+              <button class="segment" type="button" data-category="shader" role="tab">Shaderlar</button>
+              <button class="segment" type="button" data-category="resourcepack" role="tab">
+                Kaynak Paketleri
+              </button>
+            </div>
+          </div>
+
+          <div class="mods-view is-active" id="mods-pane-discover">
+            <div id="mods-results">
+              <div class="empty-state">
+                <span class="empty-glyph">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <circle cx="10.5" cy="10.5" r="6" />
+                    <path d="m15 15 4.5 4.5" />
+                  </svg>
+                </span>
+                <strong>Liste yükleniyor…</strong>
+                <p>Modrinth'ten eklentiler getiriliyor.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="mods-view" id="mods-pane-installed">
+            <section class="mod-section">
+              <div class="mod-section-head">
+                <div>
+                  <h2 id="mods-installed-title">İndirilenler</h2>
+                  <p id="mods-installed-eyebrow">YEREL</p>
+                </div>
+              </div>
+              <div class="mod-cards" id="mods-installed"></div>
+            </section>
+          </div>
+        </section>
+
+        <!-- ---------- AYARLAR ---------- -->
+        <section class="page page-settings" id="page-settings" aria-label="Ayarlar">
+          <header class="page-head">
+            <div>
+              <h1>Ayarlar</h1>
+              <p id="settings-subtitle">Launcher davranışı, görünüm, güncelleme</p>
+            </div>
+          </header>
+
+          <div class="settings-layout">
+            <aside class="settings-nav" aria-label="Ayar bölümleri">
+              <button class="settings-tab is-active" type="button" data-settings-tab="genel">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <circle cx="12" cy="12" r="3" />
+                  <path d="M12 2.8v2.3M12 18.9v2.3M2.8 12h2.3M18.9 12h2.3M5.6 5.6l1.7 1.7M16.7 16.7l1.7 1.7M18.4 5.6l-1.7 1.7M7.3 16.7l-1.7 1.7" />
+                </svg>
+                <span>Genel</span>
+              </button>
+              <button class="settings-tab" type="button" data-settings-tab="oyun">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <rect x="2.5" y="7" width="19" height="10" rx="4" />
+                  <path d="M6.6 12h2.4M7.8 10.8v2.4M15.4 11.4h.01M17.4 13h.01" />
+                </svg>
+                <span>Oyun</span>
+              </button>
+            </aside>
+
+            <div class="settings-body">
+              <!-- GENEL -->
+              <div class="settings-pane is-active" data-settings-pane="genel">
+                <section class="setting-card">
+                  <h2>Launcher</h2>
+                  <div class="setting-row">
+                    <span class="setting-label">Oyun başlayınca launcher'ı gizle</span>
+                    <button class="toggle" id="set-hide-launcher" type="button" role="switch" aria-checked="true">
+                      <span class="toggle-track"><span class="toggle-knob"></span></span>
+                    </button>
+                  </div>
+                </section>
+
+                <section class="setting-card">
+                  <h2>Temalar</h2>
+                  <p class="setting-desc">Vurgu rengini seç; tüm arayüz seçtiğin renge bürünür.</p>
+                  <div class="theme-swatches" id="theme-swatches" role="radiogroup" aria-label="Tema rengi">
+                    <button class="swatch is-active" type="button" role="radio" aria-checked="true"
+                      data-accent="0a84ff" style="--swatch: #0a84ff" aria-label="Mavi">
+                      <span class="swatch-dot"></span><span class="swatch-name">Mavi</span>
+                    </button>
+                    <button class="swatch" type="button" role="radio" aria-checked="false"
+                      data-accent="30d158" style="--swatch: #30d158" aria-label="Yeşil">
+                      <span class="swatch-dot"></span><span class="swatch-name">Yeşil</span>
+                    </button>
+                    <button class="swatch" type="button" role="radio" aria-checked="false"
+                      data-accent="bf5af2" style="--swatch: #bf5af2" aria-label="Mor">
+                      <span class="swatch-dot"></span><span class="swatch-name">Mor</span>
+                    </button>
+                    <button class="swatch" type="button" role="radio" aria-checked="false"
+                      data-accent="ff453a" style="--swatch: #ff453a" aria-label="Kırmızı">
+                      <span class="swatch-dot"></span><span class="swatch-name">Kırmızı</span>
+                    </button>
+                    <button class="swatch" type="button" role="radio" aria-checked="false"
+                      data-accent="ff9f0a" style="--swatch: #ff9f0a" aria-label="Turuncu">
+                      <span class="swatch-dot"></span><span class="swatch-name">Turuncu</span>
+                    </button>
+                    <button class="swatch" type="button" role="radio" aria-checked="false"
+                      data-accent="ffd60a" style="--swatch: #ffd60a" aria-label="Sarı">
+                      <span class="swatch-dot"></span><span class="swatch-name">Sarı</span>
+                    </button>
+                  </div>
+                </section>
+
+                <section class="setting-card">
+                  <h2>Görünüm</h2>
+                  <p class="setting-desc">Zayıf bilgisayarlarda arayüzü hafifletir.</p>
+                  <div class="setting-row">
+                    <span class="setting-label">Performans modu</span>
+                    <button class="toggle" id="set-perf-mode" type="button" role="switch" aria-checked="false">
+                      <span class="toggle-track"><span class="toggle-knob"></span></span>
+                    </button>
+                  </div>
+                </section>
+
+                <section class="setting-card">
+                  <h2>Sorun Giderme</h2>
+                  <p class="setting-desc">Oyun açılmıyorsa dene.</p>
+                  <div class="setting-actions">
+                    <button class="chip" id="repair-files" type="button">Oyun dosyalarını onar</button>
+                    <button class="chip" id="repair-java" type="button">Java'yı onar</button>
+                  </div>
+                  <p class="setting-note">
+                    Modları sıfırdan kurar, kendi eklentilerine dokunmaz. Java onarımı birkaç dakika
+                    sürebilir.
+                  </p>
+                </section>
+
+                <section class="setting-card">
+                  <h2>Sürüm &amp; Güncelleme</h2>
+                  <div class="setting-row">
+                    <div>
+                      <span class="setting-label">Modio Launcher</span>
+                      <p class="setting-desc" style="margin-top: 2px">
+                        v<span id="app-version-2">0.1.0</span>
+                      </p>
+                    </div>
+                    <button class="chip" id="check-update" type="button">Güncelleme Kontrol Et</button>
+                  </div>
+                </section>
+
+                <section class="setting-card">
+                  <h2>Hesap</h2>
+                  <p class="setting-desc">Çevrimdışı profil oluştur ve hesabını değiştir.</p>
+                  <div class="account-list" id="account-list"></div>
+                  <div class="form-inline">
+                    <label class="field">
+                      <span class="field-label">KULLANICI ADI</span>
+                      <input
+                        id="account-username"
+                        placeholder="örn. Alex"
+                        maxlength="16"
+                        autocomplete="off"
+                      />
+                    </label>
+                    <button class="chip" id="account-add" type="button">Hesap ekle</button>
+                  </div>
+                </section>
+              </div>
+
+              <!-- OYUN -->
+              <div class="settings-pane" data-settings-pane="oyun">
+                <section class="setting-card">
+                  <h2>Performans Profili</h2>
+                  <p class="setting-desc">
+                    Bilgisayarına uygun bir profil seçin. RAM, JVM ve görüntü ayarları otomatik
+                    uygulanır.
+                  </p>
+                  <div class="choice-row" id="perf-profiles" role="tablist" aria-label="Performans profili">
+                    <button class="choice" type="button" data-profile="cok-dusuk">
+                      <strong>Çok Düşük</strong><small>Zayıf PC</small>
+                    </button>
+                    <button class="choice" type="button" data-profile="dusuk">
+                      <strong>Düşük</strong><small>2 GB</small>
+                    </button>
+                    <button class="choice is-active" type="button" data-profile="orta">
+                      <strong>Orta</strong><small>4 GB</small>
+                    </button>
+                    <button class="choice" type="button" data-profile="yuksek">
+                      <strong>Yüksek</strong><small>6 GB</small>
+                    </button>
+                    <button class="choice" type="button" data-profile="ultra">
+                      <strong>Ultra</strong><small>8 GB</small>
+                    </button>
+                    <button class="choice" type="button" data-profile="ozel">
+                      <strong>Özel</strong><small>Manuel</small>
+                    </button>
+                  </div>
+                  <p class="setting-note" id="perf-note"></p>
+                </section>
+
+                <section class="setting-card">
+                  <h2>Bellek (RAM)</h2>
+                  <p class="setting-desc">Profil tarafından otomatik ayarlanır. Manuel değişiklik için "Özel" profilini seçin.</p>
+                  <div class="ram-fields">
+                    <label class="field">
+                      <span class="field-label">Minimum (GB)</span>
+                      <input id="ram-min" type="number" min="1" max="16" step="1" value="2" />
+                    </label>
+                    <label class="field">
+                      <span class="field-label">Maksimum (GB)</span>
+                      <input id="ram-max" type="number" min="1" max="64" step="1" value="4" />
+                    </label>
+                  </div>
+                  <div class="slider-row">
+                    <input
+                      id="settings-memory"
+                      type="range"
+                      min="512"
+                      max="16384"
+                      step="256"
+                      value="4096"
+                      aria-label="Bellek ayrımı"
+                    />
+                  </div>
+                  <div class="meta-line">
+                    <span>2 GB</span>
+                    <span id="settings-memory-value">4 GB seçili</span>
+                    <span id="ram-total">16 GB</span>
+                  </div>
+                </section>
+
+                <section class="setting-card">
+                  <h2>Ekran Modu</h2>
+                  <p class="setting-desc">Minecraft'ın pencerede mi yoksa tam ekranda mı açılacağını seçin.</p>
+                  <div class="choice-row" id="screen-modes">
+                    <button class="choice is-active" type="button" data-screen="window">
+                      <strong>Pencere</strong>
+                    </button>
+                    <button class="choice" type="button" data-screen="fullscreen">
+                      <strong>Tam Ekran</strong>
+                    </button>
+                  </div>
+                </section>
+
+                <section class="setting-card">
+                  <h2>Ek JVM Argümanları</h2>
+                  <p class="setting-desc">Profil tarafından otomatik ayarlanır. Manuel değişiklik için "Özel" profilini seçin.</p>
+                  <label class="field">
+                    <input id="jvm-args" placeholder="-XX:+UseG1GC" autocomplete="off" spellcheck="false" />
+                  </label>
+                </section>
+
+                <section class="setting-card">
+                  <h2>Oyun Klasörü</h2>
+                  <p class="setting-desc">Minecraft'ın yapılandırma ve mod dosyalarının bulunduğu klasör.</p>
+                  <p class="setting-path" id="settings-game-dir">Belirleniyor…</p>
+                </section>
+
+                <section class="setting-card">
+                  <h2>Java</h2>
+                  <p class="setting-desc">Oyun bu Java çalıştırıcısıyla başlatılır. Sistem Java'sı otomatik algılanır.</p>
+                  <p class="setting-path" id="settings-java-path">Algılanıyor…</p>
+                </section>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <!-- İndirme göstergesi (yalnızca indirme sırasında görünür) -->
+      <div class="downloads" id="downloads" hidden>
+        <div class="downloads-inner" id="downloads-list"></div>
+      </div>
+    </div>
+
+    <!-- ================= İLK AÇILIŞ: HESAP KURULUMU ================= -->
+    <div class="onboarding" id="onboarding" hidden>
+      <div class="onboarding-panel">
+        <span class="onboard-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path d="M4 5.5 8.6 3l3.4 3 3.4-3L20 5.5v4.2c0 5-3.4 8.6-8 11.3-4.6-2.7-8-6.3-8-11.3V5.5Z" />
+          </svg>
+        </span>
+
+        <section class="onboard-step is-active" data-step="welcome">
+          <h1>Modio Launcher'a hoş geldin</h1>
+          <p class="lead">
+            Başlamak için bir profil oluştur; sürümünü seç, modlarını yönet ve tek düğmeyle oyuna
+            gir.
+          </p>
+          <div class="onboard-actions">
+            <button class="btn btn-primary" id="onboard-start" type="button">Başla</button>
+            <button class="btn btn-secondary" id="onboard-skip" type="button">Şimdilik atla</button>
+          </div>
+          <p class="onboard-foot">
+            Oyun dosyaları ilk başlatmada resmî Mojang sunucularından indirilir.
+          </p>
+        </section>
+
+        <section class="onboard-step" data-step="account">
+          <h1>Hesabını ekle</h1>
+          <p class="lead">Launcher şu an çevrimdışı profillerle çalışıyor.</p>
+
+          <div class="method-list">
+            <button class="method is-active" type="button" data-method="offline">
+              <span class="method-icon">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <circle cx="12" cy="8.4" r="3.6" />
+                  <path d="M5 20c.7-3.3 3.3-5 7-5s6.3 1.7 7 5" />
+                </svg>
+              </span>
+              <span class="method-text">
+                <strong>Çevrimdışı profil</strong>
+                <small>Tek oyunculu ve çevrimdışı sunucular için</small>
+              </span>
+              <span class="method-check">✓</span>
+            </button>
+
+            <button class="method is-disabled" type="button" data-method="microsoft" aria-disabled="true">
+              <span class="method-icon">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <rect x="4" y="4" width="7" height="7" rx="1.2" />
+                  <rect x="13" y="4" width="7" height="7" rx="1.2" />
+                  <rect x="4" y="13" width="7" height="7" rx="1.2" />
+                  <rect x="13" y="13" width="7" height="7" rx="1.2" />
+                </svg>
+              </span>
+              <span class="method-text">
+                <strong>Microsoft hesabı</strong>
+                <small>Çevrimiçi oyun · yakında</small>
+              </span>
+              <span class="badge badge-ghost">Yakında</span>
+            </button>
+          </div>
+
+          <label class="field onboard-field">
+            <span class="field-label">KULLANICI ADI</span>
+            <input
+              id="onboard-username"
+              placeholder="örn. Alex"
+              maxlength="16"
+              autocomplete="off"
+              spellcheck="false"
+            />
+          </label>
+
+          <div class="avatar-preview" id="avatar-preview">
+            <span class="account-avatar" id="preview-avatar">?</span>
+            <span class="account-text">
+              <strong id="preview-name">Kullanıcı adı</strong>
+              <small>Çevrimdışı profil</small>
+            </span>
+          </div>
+
+          <div class="onboard-actions">
+            <button class="btn btn-primary" id="onboard-create" type="button" disabled>
+              Profili oluştur
+            </button>
+            <button class="btn btn-secondary" id="onboard-back" type="button">Geri</button>
+          </div>
+        </section>
+
+        <section class="onboard-step" data-step="done">
+          <h1>Her şey hazır</h1>
+          <p class="lead">
+            <strong id="onboard-done-name">Player</strong> profili oluşturuldu ve seçildi. Artık
+            ortadaki düğmeyle oyunu başlatabilirsin.
+          </p>
+          <div class="onboard-actions">
+            <button class="btn btn-primary" id="onboard-finish" type="button">Launcher'a gir</button>
+            <button class="btn btn-secondary" id="onboard-launch" type="button">
+              Oyunu şimdi başlat
+            </button>
+          </div>
+          <p class="onboard-foot">
+            Hesabını dilediğin zaman Ayarlar → Hesap bölümünden değiştirebilirsin.
+          </p>
+        </section>
+
+        <div class="onboard-dots" id="onboard-dots">
+          <span class="is-active"></span>
+          <span></span>
+          <span></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= DETAIL SHEET ================= -->
+    <div class="scrim" id="scrim" hidden></div>
+    <section class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title" hidden>
+      <div class="sheet-grabber" id="sheet-grabber"><span></span></div>
+      <div class="sheet-content" id="sheet-content"></div>
+    </section>
+
+    <!-- ================= TOAST ================= -->
+    <div class="toast" id="toast" role="status" aria-live="polite">
+      <span class="toast-dot"></span>
+      <span id="toast-text"></span>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

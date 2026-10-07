@@ -1,0 +1,11 @@
+# launcher.py'nin çalışma zamanı bağımlılıkları.
+#
+# Dondurma betiği bunları sanal ortama kurar; sürümler sabitlendi ki
+# dondurulmuş ikili makineden makineye değişmesin. Bu dosya olmadan temiz bir
+# makinede (örneğin CI runner'ında) PyInstaller
+# "ModuleNotFoundError: No module named 'minecraft_launcher_lib'" ile kırılır.
+#
+# Not: requests, minecraft-launcher-lib 8.0'ın kendi bağımlılığıdır; burada
+# ayrıca sabitliyoruz ki ikili sürpriz bir yükseltmeyle değişmesin.
+minecraft-launcher-lib==8.0
+requests==2.34.2
