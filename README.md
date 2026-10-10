@@ -93,8 +93,8 @@ eksiksiz oluştuğu için son sıkıştırma adımı `appimagetool` ile tamamlan
 
 ```bash
 ARCH=x86_64 appimagetool-x86_64.AppImage \
-  src-tauri/target/release/bundle/appimage/minecraft-launcher.AppDir \
-  src-tauri/target/release/bundle/appimage/minecraft-launcher_0.1.0_amd64.AppImage
+  src-tauri/target/release/bundle/appimage/modio-launcher.AppDir \
+  src-tauri/target/release/bundle/appimage/modio-launcher_0.1.0_amd64.AppImage
 ```
 
 CI'daki "AppImage eksikse appimagetool ile tamamla" adımı bunu otomatik yapar;
