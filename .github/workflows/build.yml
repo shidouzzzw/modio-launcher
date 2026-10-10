@@ -88,6 +88,21 @@ jobs:
           version=$(node -p "require('./src-tauri/tauri.conf.json').version")
           target="src-tauri/target/release/bundle/appimage/${name}_${version}_amd64.AppImage"
 
+          # appimagetool, AppDir kökünde .desktop içindeki `Icon=` adıyla birebir
+          # eşleşen bir simge arar. Tauri kök simgeyi ürün adıyla koyar
+          # ("Modio Launcher.png") ama `Icon=` ikili adını yazar (modio-launcher);
+          # eşleşmezse appimagetool "defined in desktop file but not found"
+          # deyip exit 1 verir ve AppImage hiç üretilmez.
+          desktop=$(ls "$appdir"/*.desktop | head -1)
+          icon=$(sed -n 's/^Icon=//p' "$desktop" | head -1)
+          if [ -n "$icon" ] && [ ! -f "$appdir/$icon.png" ]; then
+            source_icon=$(ls "$appdir"/*.png 2>/dev/null | head -1 || true)
+            if [ -n "$source_icon" ]; then
+              cp "$source_icon" "$appdir/$icon.png"
+              echo "Simge, Icon=$icon ile eşleşsin diye kopyalandı: $(basename "$source_icon")"
+            fi
+          fi
+
           # Uzantı korunmalı: `.AppImage` olmayan bir ada sahip dosyayı bazı
           # sistemler (AppImageLauncher binfmt) tanımaz ve execv başarısız olur.
           tool=/tmp/appimagetool-x86_64.AppImage
@@ -127,8 +142,8 @@ jobs:
 
       # Tauri paket adına sürüm ve mimari ekini kendisi koyuyor ve dosya adı
       # ayarlanamıyor. Kullanıcıya sabit adlı dosyalar sunmak için paketler
-      # sade adlarla dışa aktarılır: modio-launcher.exe, modio-launcher.msi,
-      # modio-launcher.deb, modio-launcher.rpm, modio-launcher.AppImage.
+      # ürün adıyla dışa aktarılır: "Modio Launcher.exe", "Modio Launcher.msi",
+      # "Modio Launcher.deb", "Modio Launcher.rpm", "Modio Launcher.AppImage".
       # Böylece indirme bağlantısı sürümden bağımsız kalır.
       - name: Paket adlarını sadeleştir
         shell: bash
@@ -150,11 +165,11 @@ jobs:
             echo "HAZIR    $target  <-  $(basename "$first")"
           }
 
-          stage "$bundle/nsis/*.exe"      modio-launcher.exe
-          stage "$bundle/msi/*.msi"       modio-launcher.msi
-          stage "$bundle/deb/*.deb"       modio-launcher.deb
-          stage "$bundle/rpm/*.rpm"       modio-launcher.rpm
-          stage "$bundle/appimage/*.AppImage" modio-launcher.AppImage
+          stage "$bundle/nsis/*.exe"      "Modio Launcher.exe"
+          stage "$bundle/msi/*.msi"       "Modio Launcher.msi"
+          stage "$bundle/deb/*.deb"       "Modio Launcher.deb"
+          stage "$bundle/rpm/*.rpm"       "Modio Launcher.rpm"
+          stage "$bundle/appimage/*.AppImage" "Modio Launcher.AppImage"
 
           if [ -z "$(ls -A "$out")" ]; then
             echo "Sade adla dışa aktarılacak paket bulunamadı." >&2
