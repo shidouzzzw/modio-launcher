@@ -2982,9 +2982,6 @@ function setupMemory() {
   if (storedProfile) setActiveProfile(storedProfile);
 }
 
-/** Uygulama sürümü; tauri.conf.json ve package.json ile eşit tutulmalı. */
-const LAUNCHER_VERSION = "0.1.0";
-
 /** Derleme zamanı yedeği; gerçek sürüm Tauri'den (tauri.conf.json) okunur. */
 const LAUNCHER_VERSION_FALLBACK = "0.1.0";
 
@@ -3015,28 +3012,36 @@ async function syncAppVersion(): Promise<void> {
   renderAppVersion();
 }
 
-/** Sunucudaki version.json ile karşılaştırır; yeni sürüm varsa bağlantı verir. */
+/**
+ * Depodaki en yeni yayını kurulu sürümle karşılaştırır; yeniyse indirme
+ * sayfasını açar. Sürüm numarası tauri.conf.json'dan geldiği için burada
+ * elle güncellenen ikinci bir sürüm yok.
+ */
 async function checkForUpdate(): Promise<void> {
   const button = $<HTMLButtonElement>("#check-update");
   if (button) button.disabled = true;
 
   try {
-    if (!inTauri()) {        toast(`Modio Launcher ${launcherVersion} · güncel (önizleme)`);
+    if (!inTauri()) {
+      toast("Güncelleme kontrolü yalnızca kurulu uygulamada çalışır");
       return;
     }
-    const result = await invoke<{ latest: string; url: string; upToDate: boolean }>(
-      "check_update",
-      { current: launcherVersion }
-    );
+    const result = await invoke<{
+      latest: string;
+      url: string;
+      notes: string;
+      upToDate: boolean;
+    }>("check_update", { current: launcherVersion });
     if (result.upToDate || !result.latest) {
       toast(`Modio Launcher ${launcherVersion} güncel`);
-    } else {
-      toast(`Yeni sürüm var: ${result.latest}`);
-      if (result.url) void openExternal(result.url);
+      return;
     }
+    toast(`Yeni sürüm hazır: ${result.latest} — indirme sayfası açılıyor`);
+    if (result.url) await openExternal(result.url);
   } catch (error) {
-    // Sunucuya ulaşılamadıysa sessizce güncel varsay; kullanıcıyı bloklamayalım.
-    toast(`Modio Launcher ${LAUNCHER_VERSION} güncel`);
+    // Burada "güncel" demek yanıltıcı olur: kontrol başarısız olduysa söyle.
+    const detail = error instanceof Error ? error.message : String(error);
+    toast(`Güncelleme kontrol edilemedi: ${detail}`);
   } finally {
     if (button) button.disabled = false;
   }

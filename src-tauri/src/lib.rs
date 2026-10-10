@@ -663,31 +663,82 @@ fn java_path() -> Result<String, String> {
         .ok_or_else(|| "Java bulunamadı".to_string())
 }
 
-/// Güncelleme kontrolü: sürüm bilgisi burada yayınlanır, ön yüz buradan okur.
-/// Yeni sürüm yayınlarken bu URL'deki JSON'ı güncellemek yeterli:
-///   { "latest": "0.1.1", "url": "https://..." }
-/// Yayın öncesi bu dosya yoksa kontrol sessizce "güncel" der.
+/// Güncelleme kontrolünün okuduğu depo. Yeni sürüm yayınlarken GitHub'da
+/// sürüm etiketiyle bir "Release" oluşturmak yeterlidir; kod değişmez.
+const GITHUB_REPO: &str = "shidouzzzw/minecraft-launcher";
+
+/// "v1.2.3" / "1.2.3-beta.1" gibi etiketleri karşılaştırılabilir sayılara çevirir.
+/// Ön ek (v) ve ön sürüm son eki (-beta) sayılmaz; yalnız sürüm çekirdeği bakılır.
+fn version_parts(value: &str) -> Vec<u64> {
+    value
+        .trim()
+        .trim_start_matches(['v', 'V'])
+        .split(['-', '+'])
+        .next()
+        .unwrap_or_default()
+        .split('.')
+        .map(|part| part.trim().parse::<u64>().unwrap_or(0))
+        .collect()
+}
+
+/// Yayındaki sürüm, kurulu sürümden daha yeni mi? Boş/eksik sürümde hayır.
+fn is_newer(latest: &str, current: &str) -> bool {
+    let new = version_parts(latest);
+    let old = version_parts(current);
+    if new.iter().all(|part| *part == 0) || old.iter().all(|part| *part == 0) {
+        return false;
+    }
+    for index in 0..new.len().max(old.len()) {
+        let left = new.get(index).copied().unwrap_or(0);
+        let right = old.get(index).copied().unwrap_or(0);
+        if left != right {
+            return left > right;
+        }
+    }
+    false
+}
+
+/// Güncelleme kontrolü: depodaki en yeni **yayınlanmış** sürümü okur.
+///
+/// Taslak veya ön sürüm etiketleri GitHub'ın `releases/latest` yanıtına
+/// girmediği için kullanıcıya test sürümü önerilmez. Hata durumunda sessizce
+/// "güncel" demek yerine hata döndürülür; arayüz bunu kullanıcıya söyler.
 #[tauri::command]
 async fn check_update(current: Option<String>) -> Result<serde_json::Value, String> {
+    let current = current.unwrap_or_default();
     let client = reqwest::Client::builder()
-        .timeout(std::time::Duration::from_secs(10))
+        .timeout(std::time::Duration::from_secs(15))
         .build()
         .map_err(|e| e.to_string())?;
     let response = client
-        .get("https://modio-launcher.vercel.app/version.json")
+        .get(format!(
+            "https://api.github.com/repos/{GITHUB_REPO}/releases/latest"
+        ))
+        .header("Accept", "application/vnd.github+json")
+        .header("User-Agent", "ModioLauncher")
         .send()
         .await
-        .map_err(|e| e.to_string())?;
-    if !response.status().is_success() {
-        return Ok(serde_json::json!({ "latest": current.unwrap_or_default(), "upToDate": true }));
+        .map_err(|e| format!("Güncelleme sunucusuna ulaşılamadı: {e}"))?;
+
+    let status = response.status();
+    if !status.is_success() {
+        return Err(format!(
+            "Güncelleme kontrolü başarısız (HTTP {})",
+            status.as_u16()
+        ));
     }
-    let body: serde_json::Value = response.json().await.map_err(|e| e.to_string())?;
-    let latest = body["latest"].as_str().unwrap_or_default().to_string();
-    let up_to_date = latest.is_empty() || latest == current.unwrap_or_default();
+
+    let body: serde_json::Value = response
+        .json()
+        .await
+        .map_err(|e| format!("Güncelleme yanıtı okunamadı: {e}"))?;
+    let latest = body["tag_name"].as_str().unwrap_or_default().trim().to_string();
+
     Ok(serde_json::json!({
-        "latest": latest,
-        "url": body["url"].as_str().unwrap_or_default(),
-        "upToDate": up_to_date
+        "latest": latest.clone(),
+        "url": body["html_url"].as_str().unwrap_or_default(),
+        "notes": body["body"].as_str().unwrap_or_default(),
+        "upToDate": !is_newer(&latest, &current)
     }))
 }
 
@@ -712,4 +763,32 @@ pub fn run() {
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{is_newer, version_parts};
+
+    #[test]
+    fn surum_parcalari_onek_ve_on_surumu_yok_sayar() {
+        assert_eq!(version_parts("v1.2.3"), vec![1, 2, 3]);
+        assert_eq!(version_parts("1.2.3-beta.1"), vec![1, 2, 3]);
+        assert_eq!(version_parts("0.9"), vec![0, 9]);
+    }
+
+    #[test]
+    fn yeni_surum_dogru_karar_verir() {
+        assert!(is_newer("v0.2.0", "0.1.0"));
+        assert!(is_newer("0.1.1", "0.1.0"));
+        assert!(is_newer("1.0", "0.9.9"));
+        assert!(!is_newer("v0.1.0", "0.1.0"));
+        assert!(!is_newer("0.0.9", "0.1.0"));
+    }
+
+    #[test]
+    fn eksik_veya_bos_surum_guncel_sayilir() {
+        assert!(!is_newer("", "0.1.0"));
+        assert!(!is_newer("v0.0.0", "0.1.0"));
+        assert!(!is_newer("v0.2.0", ""));
+    }
 }
