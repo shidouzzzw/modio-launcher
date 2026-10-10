@@ -146,15 +146,22 @@ dünyalarını silmemelidir. Eski sürümlerde `launcher-service/minecraft` içi
 kalan varsayılan örnek, ilk çalıştırmada kullanıcı klasörüne taşınır; taşıma
 başarısız olursa (örneğin başka disk) veri yerinde bırakılır.
 
-## Sürüm
+## Sürüm ve güncelleme
 
 Sürüm numarasının tek kaynağı `src-tauri/tauri.conf.json` içindeki `version`
-alanıdır; arayüz bunu Tauri'den okur. Güncelleme kontrolü
-`https://modio-launcher.vercel.app/version.json` dosyasını okur:
+alanıdır; arayüz bunu Tauri'den okur.
 
-```json
-{ "latest": "0.1.1", "url": "https://…/indirme-baglantisi" }
-```
+Ayarlar'daki **Güncelleme Kontrol Et** düğmesi, `src-tauri/src/lib.rs` içindeki
+`GITHUB_REPO` deposunun en son yayınlanmış Release'ini GitHub API'den okur ve
+sürüm çekirdeğini sayısal olarak karşılaştırır. Yeni sürüm varsa indirme
+sayfası açılır. Taslak ve ön sürüm etiketleri GitHub'ın `releases/latest`
+yanıtına girmediği için kullanıcıya test sürümü önerilmez.
 
-Yeni sürüm yayınlarken `tauri.conf.json` sürümünü artırıp bu JSON'ı güncellemek
-yeterlidir.
+Yeni sürüm yayınlarken:
+
+1. `tauri.conf.json` içindeki `version` alanını artır.
+2. Aynı numarayla etiket oluşturup it: `git tag v0.2.0 && git push origin v0.2.0`
+3. `Derleme` iş akışı paketleri üretir ve etiketli sürümde Release'e ekler.
+
+Kontrol başarısız olursa (ağ, yayın yokluğu, HTTP hatası) arayüz "güncel"
+demek yerine gerçek sebebi gösterir.

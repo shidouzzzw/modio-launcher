@@ -22,6 +22,10 @@ jobs:
           - os: windows-latest
             artifact: windows
     runs-on: ${{ matrix.os }}
+    # Etiketli sürümde paketler Release'e yüklenir; bu izin olmadan
+    # GITHUB_TOKEN yalnızca okuyabilir.
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
 
@@ -126,3 +130,31 @@ jobs:
           name: modio-launcher-${{ matrix.artifact }}
           path: src-tauri/target/release/bundle/**
           if-no-files-found: error
+
+      # Ayarlar'daki "Güncelleme Kontrol Et" düğmesi deponun en son Release'ini
+      # okur; indirilebilir bir hedef olması için paketler yayına eklenir.
+      # Yalnızca etiketle tetiklenen koşularda çalışır.
+      - name: Paketleri Release'e ekle
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          tag="$GITHUB_REF_NAME"
+          gh release view "$tag" > /dev/null 2>&1 || \
+            gh release create "$tag" --title "$tag" --generate-notes
+
+          uploaded=0
+          while IFS= read -r -d '' file; do
+            gh release upload "$tag" "$file" --clobber
+            uploaded=$((uploaded + 1))
+          done < <(find src-tauri/target/release/bundle -type f \
+            \( -name '*.msi' -o -name '*.exe' -o -name '*.deb' \
+            -o -name '*.rpm' -o -name '*.AppImage' \) -print0)
+
+          if [ "$uploaded" -eq 0 ]; then
+            echo "Release'e eklenecek paket bulunamadı." >&2
+            exit 1
+          fi
+          echo "$uploaded paket $tag yayınına eklendi."

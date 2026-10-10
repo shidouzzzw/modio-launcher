@@ -665,7 +665,7 @@ fn java_path() -> Result<String, String> {
 
 /// Güncelleme kontrolünün okuduğu depo. Yeni sürüm yayınlarken GitHub'da
 /// sürüm etiketiyle bir "Release" oluşturmak yeterlidir; kod değişmez.
-const GITHUB_REPO: &str = "shidouzzzw/minecraft-launcher";
+const GITHUB_REPO: &str = "shidouzzzw/modio-launcher";
 
 /// "v1.2.3" / "1.2.3-beta.1" gibi etiketleri karşılaştırılabilir sayılara çevirir.
 /// Ön ek (v) ve ön sürüm son eki (-beta) sayılmaz; yalnız sürüm çekirdeği bakılır.
