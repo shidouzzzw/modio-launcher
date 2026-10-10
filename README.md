@@ -163,5 +163,12 @@ Yeni sürüm yayınlarken:
 2. Aynı numarayla etiket oluşturup it: `git tag v0.2.0 && git push origin v0.2.0`
 3. `Derleme` iş akışı paketleri üretir ve etiketli sürümde Release'e ekler.
 
+Paketler **sabit adlarla** yayınlanır: `modio-launcher.exe`,
+`modio-launcher.msi`, `modio-launcher.deb`, `modio-launcher.rpm`,
+`modio-launcher.AppImage`. Tauri'nin ürettiği sürüm/mimari ekli dosyalar
+(`modio-launcher_0.1.0_x64-setup.exe` gibi) CI'da bu adlara kopyalanır;
+böylece `releases/latest/download/modio-launcher.exe` bağlantısı sürümden
+bağımsız kalır. Sürüm bilgisi etiketten okunur.
+
 Kontrol başarısız olursa (ağ, yayın yokluğu, HTTP hatası) arayüz "güncel"
 demek yerine gerçek sebebi gösterir.

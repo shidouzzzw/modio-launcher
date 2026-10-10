@@ -12,6 +12,9 @@ dist
 dist-ssr
 *.local
 
+# CI'da sade adlarla dışa aktarılan paketler (build.yml)
+dist-artifacts/
+
 # Launcher servisi: dondurulmuş ikili ve derleme çıktıları (CI'da üretilir)
 src-tauri/binaries/
 launcher-service/build/

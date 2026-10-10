@@ -125,10 +125,46 @@ jobs:
             exit 1
           fi
 
+      # Tauri paket adına sürüm ve mimari ekini kendisi koyuyor ve dosya adı
+      # ayarlanamıyor. Kullanıcıya sabit adlı dosyalar sunmak için paketler
+      # sade adlarla dışa aktarılır: modio-launcher.exe, modio-launcher.msi,
+      # modio-launcher.deb, modio-launcher.rpm, modio-launcher.AppImage.
+      # Böylece indirme bağlantısı sürümden bağımsız kalır.
+      - name: Paket adlarını sadeleştir
+        shell: bash
+        run: |
+          set -euo pipefail
+          bundle=src-tauri/target/release/bundle
+          out=dist-artifacts
+          rm -rf "$out"
+          mkdir -p "$out"
+
+          stage() {
+            local pattern="$1" target="$2" first
+            first=$(compgen -G "$pattern" | head -1 || true)
+            if [ -z "$first" ]; then
+              echo "ATLANDI  $pattern (bu platformda üretilmiyor)"
+              return 0
+            fi
+            cp "$first" "$out/$target"
+            echo "HAZIR    $target  <-  $(basename "$first")"
+          }
+
+          stage "$bundle/nsis/*.exe"      modio-launcher.exe
+          stage "$bundle/msi/*.msi"       modio-launcher.msi
+          stage "$bundle/deb/*.deb"       modio-launcher.deb
+          stage "$bundle/rpm/*.rpm"       modio-launcher.rpm
+          stage "$bundle/appimage/*.AppImage" modio-launcher.AppImage
+
+          if [ -z "$(ls -A "$out")" ]; then
+            echo "Sade adla dışa aktarılacak paket bulunamadı." >&2
+            exit 1
+          fi
+
       - uses: actions/upload-artifact@v4
         with:
           name: modio-launcher-${{ matrix.artifact }}
-          path: src-tauri/target/release/bundle/**
+          path: dist-artifacts/*
           if-no-files-found: error
 
       # Ayarlar'daki "Güncelleme Kontrol Et" düğmesi deponun en son Release'ini
@@ -146,12 +182,11 @@ jobs:
             gh release create "$tag" --title "$tag" --generate-notes
 
           uploaded=0
-          while IFS= read -r -d '' file; do
+          for file in dist-artifacts/*; do
+            [ -f "$file" ] || continue
             gh release upload "$tag" "$file" --clobber
             uploaded=$((uploaded + 1))
-          done < <(find src-tauri/target/release/bundle -type f \
-            \( -name '*.msi' -o -name '*.exe' -o -name '*.deb' \
-            -o -name '*.rpm' -o -name '*.AppImage' \) -print0)
+          done
 
           if [ "$uploaded" -eq 0 ]; then
             echo "Release'e eklenecek paket bulunamadı." >&2
